@@ -2939,7 +2939,13 @@ async function renderPlag(){
 
       const statusLabel =
         r.status==="High" ? "Copied" :
-        r.status==="Medium" ? "Suspicious" : "Original";
+        r.status==="TypedMatch" ? "Same Answer" :
+        r.status==="Medium" ? "Suspicious" :
+        r.status==="Short" ? "Too Short" : "Original";
+
+      const badgeStyle =
+        r.status==="Short" ? 'background:rgba(148,163,184,.15);color:#94a3b8;' :
+        r.status==="TypedMatch" ? 'background:rgba(96,165,250,.15);color:#60A5FA;' : '';
 
       table.innerHTML += `
       <tr>
@@ -2952,7 +2958,9 @@ async function renderPlag(){
             <div class="simbar-fill"
               style="width:${r.similarity_percentage}%;
               background:${r.status==="High"?"red":
-                          r.status==="Medium"?"orange":"green"};">
+                          r.status==="Medium"?"orange":
+                          r.status==="Short"?"gray":
+                          r.status==="TypedMatch"?"#60A5FA":"green"};">
             </div>
           </div>
 
@@ -2962,7 +2970,7 @@ async function renderPlag(){
           <span class="badge ${
             r.status==="High"?"warn":
             r.status==="Medium"?"mid":"ok"
-          }">
+          }" style="${badgeStyle}">
             ${statusLabel}
           </span>
         </td>
@@ -3380,6 +3388,15 @@ async function startExam() {
     document.getElementById('sidName').textContent = data.student.name;
     document.getElementById('sidEnroll').textContent = data.student.enrollment_no;
     document.getElementById('sidSeat').textContent = data.student.seat_no;
+
+    // Reset the code editor, console output, and paste-tracking counters
+    // so a new student never sees the previous student's leftover code.
+    codeArea.value = "";
+    refreshGutter();
+    document.getElementById("output").textContent = "";
+    lastRunOutput = "";
+    totalPastedChars = 0;
+    pasteEventCount = 0;
 
     go('scr-exam');
 
